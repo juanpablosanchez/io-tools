@@ -1,17 +1,30 @@
 const fs = require('fs');
+const fileFormat = require('./fileFormat');
 
-const folderPath = '../../bible-notes/src/resources/books/';
+const copyFiles = (originFolder, destinationFolder, newExtension = null) => {
+  fs.readdir(originFolder, (err, files) => {
+    if (!files || files.length <= 0) {
+      throw new Error('files not found');
+    }
 
-fs.readdir(folderPath + 'jsons/', (err, files) => {
-  // destination.txt will be created or overwritten by default.
-  for (let i = 0; i < files.length; i++) {
-    var file = files[i];
+    fs.mkdirSync(destinationFolder);
 
-    var [ fileName, extension ] = file.split('.');
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
 
-    fs.copyFile(folderPath + 'jsons/' + file, folderPath + fileName + '.ts', (err) => {
-      if (err) throw err;
-      console.log(fileName +' was copied');
-    });
-  }
-});
+      const originFile = originFolder + file;
+      let destinationFile = destinationFolder + file;
+
+      if (newExtension) {
+        destinationFile = fileFormat.changeFileExtension(destinationFile, newExtension);
+      }
+
+      fs.copyFile(originFile, destinationFile, (err) => {
+        if (err) throw err;
+        console.log(file + ' was copied');
+      });
+    }
+  });
+};
+
+exports.copyFiles = copyFiles;

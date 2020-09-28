@@ -1,9 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const fileName = 'bible';
-const extemsionFile = '.json';
-const readExtemsionFile = '.json';
+const saveService = require('./save');
 
 const folderPath = '../../bible-notes/src/resources/books/jsons/';
 
@@ -43,14 +41,6 @@ function process(data) {
   };
 }
 
-function save(name, data) {
-  const stringifyData = JSON.stringify(data, null, 2);
-  fs.writeFile(name, stringifyData, (error) => {
-    if (error) throw error;
-    console.log('Data written to file');
-  });
-}
-
 fs.readdir(folderPath, (err, files) => {
   files.forEach((file) => {
     fs.readFile(folderPath + file, (err, data) => {
@@ -60,10 +50,10 @@ fs.readdir(folderPath, (err, files) => {
       }
 
       const parsedData = JSON.parse(data);
-      save(folderPath + 'backup/' + file, parsedData);
+      saveService.json(folderPath + 'backup/' + file, parsedData);
 
       const processData = process(parsedData);
-      save(folderPath + file, processData);
+      saveService.json(folderPath + file, processData);
     });
   });
 });
