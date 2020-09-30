@@ -1,3 +1,10 @@
+const getFileName = (filePath) => {
+  const splitedPath = filePath.split('/');
+  const fileName = splitedPath[splitedPath.length - 1];
+
+  return fileName;
+}
+
 const changeFileExtension = (fileName, newExtension) => {
   if (!fileName) {
     throw new Error('invalid format file name');
@@ -18,7 +25,7 @@ const addSuffix = (fileName, suffix) => {
     throw new Error('invalid format file name');
   }
 
-  if (!newExtension) {
+  if (!suffix) {
     throw new Error('invalid extension');
   }
 
@@ -28,6 +35,6 @@ const addSuffix = (fileName, suffix) => {
   return splitedFile.join('.');
 };
 
-
+exports.getFileName = getFileName;
 exports.changeFileExtension = changeFileExtension;
 exports.addSuffix = addSuffix;

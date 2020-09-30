@@ -1,38 +1,66 @@
 const fs = require('fs');
 const readline = require('readline');
 const saveService = require('./save');
+const fileFormatService = require('./fileFormat');
 
-var myInterface = readline.createInterface({
-  input: fs.createReadStream('bible.txt'),
-});
+let streamResources;
 
-var lineX = -1;
-var lineno = 0;
-var json = [];
-myInterface.on('line', function (line) {
-  lineno++;
+const readStreamToArray = (myInterface, fileKey) => {
+  streamResources[fileKey] = {
+    currentLineNumber: 0,
+    json: [],
+  };
 
-  var l = line.trim();
+  myInterface.on('line', function (line) {
+    streamResources[fileKey].currentLineNumber++;
 
-  if (l) {
-    json.push(l);
+    var formatedLine = line.trim();
+
+    if (formatedLine) {
+      streamResources[fileKey].json.push(formatedLine);
+    }
+
+    if (streamResources[fileKey].currentLineNumber % 1 === 0) {
+      console.log(fileKey + ' - Line number: ' + streamResources[fileKey].currentLineNumber);
+    }
+  });
+};
+
+const saveArrayToJson = (fileName, fileKey) => {
+  let lineX = -1;
+
+  var myTimer = setInterval(function () {
+    if (lineX === streamResources[fileKey].currentLineNumber) {
+      console.log('# ' + fileKey + ' - Total lines: ' + streamResources[fileKey].currentLineNumber);
+
+      saveService.json(fileName, streamResources[fileKey].json);
+
+      clearInterval(myTimer);
+      return;
+    }
+
+    lineX = streamResources[fileKey].currentLineNumber;
+  }, 300);
+};
+
+const processStreamToArrayJson = (filesPaths) => {
+  if (!filesPaths || !filesPaths.length || filesPaths.length <= 0) {
+    throw new Error('First parameter is not a list of files');
   }
 
-  if (lineno % 100 === 0) {
-    console.log('Line number ' + lineno);
-  }
-});
+  streamResources = {};
 
-var myTimer = setInterval(function () {
-  if (lineX === lineno) {
-    console.log('line number ' + lineno);
-    console.log('----- End');
+  filesPaths.forEach((filePath, index) => {
+    const fileKey = 'file' + index;
+    const fileName = fileFormatService.changeFileExtension(filePath, '.json');
 
-    saveService.json('bible.json', json);
+    const myInterface = readline.createInterface({
+      input: fs.createReadStream(filePath),
+    });
 
-    clearInterval(myTimer);
-    return;
-  }
+    readStreamToArray(myInterface, fileKey);
+    saveArrayToJson(fileName, fileKey);
+  });
+};
 
-  lineX = lineno;
-}, 3000);
+exports.processStreamToArrayJson = processStreamToArrayJson;

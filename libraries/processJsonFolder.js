@@ -10,7 +10,10 @@ const overrideFolder = (folderPath, process) => {
     throw new Error('Second parameter is invalid');
   }
 
-  readService.readFolderFiles(folderPath, (files) => processJsonFilesService.overrideFiles(files, process));
+  readService.readFolderFiles(folderPath, (files) => {
+    const filesPaths = files.map((file) => folderPath + file);
+    processJsonFilesService.overrideFiles(filesPaths, process);
+  });
 };
 
 exports.overrideFolder = overrideFolder;
